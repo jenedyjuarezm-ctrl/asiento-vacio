@@ -1,11 +1,9 @@
 // ==========================================================================
-// CONFIGURACIÓN DE LA NUBE (JSONBIN)
+// CONFIGURACIÓN DE SUPABASE
 // ==========================================================================
-// 1. Pega aquí el enlace de tu Bin (ej: https://api.jsonbin.io/v3/b/65432...)
-const JSONBIN_URL = "https://api.jsonbin.io/v3/b/6aef2c25ffd5d16053af0777"; 
-
-// 2. Tu Master Key ya está configurada:
-const JSONBIN_KEY = "$2a$10$4r9cWIAXuS.WcxaqcaRGTOIRwi02ysoU.oJSKoIedgXeSD0aFNKfK"; 
+const SUPABASE_URL = 'https://jntyotrddlrzccoauram.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_H8uhN5DbCWLslwo4uJlDuw_jdAjE67K';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ==========================================================================
 // DATOS Y RESOLUCIONES
@@ -26,11 +24,11 @@ const RESOLUTIONS = [
 ];
 
 const MISSIONS = [
-    { id: "M1", titulo: "Operación Tormenta de Fuego", desc: "Has desafiado a las superpotencias. Tu misión es infiltrarte en las reuniones del G7 y filtrar sus planes." },
-    { id: "M2", titulo: "El Pacificador Ciego", desc: "Te has abstenido demasiado. Tu misión es viajar a la zona de conflicto y mediar un acuerdo de paz imposible." },
-    { id: "M3", titulo: "La Sombra del Secretario", desc: "Tus votos fueron 100% alineados. Tu misión es sabotear desde adentro la próxima resolución." },
-    { id: "M4", titulo: "Escudo Humanitario", desc: "Has votado buscando salvar vidas. Tu misión es liderar un convoy de la ONU en zona sitiada." },
-    { id: "M5", titulo: "Protocolo Génesis", desc: "Eres impredecible. Tu misión es hackear los servidores de la Asamblea General." }
+    { id: "M1", titulo: "Operación Tormenta de Fuego", desc: "Has desafiado a las superpotencias. Tu misión es infiltrarte en las reuniones del G7 y filtrar sus planes de expansión militar." },
+    { id: "M2", titulo: "El Pacificador Ciego", desc: "Te has abstenido demasiado. Tu misión es viajar a la zona de conflicto y mediar un acuerdo de paz imposible entre facciones radicales." },
+    { id: "M3", titulo: "La Sombra del Secretario", desc: "Tus votos fueron 100% alineados. Tu misión es sabotear desde adentro la próxima resolución que intente congelar los fondos de ayuda humanitaria." },
+    { id: "M4", titulo: "Escudo Humanitario", desc: "Has votado buscando salvar vidas. Tu misión es liderar un convoy de la ONU hacia una zona sitiada por el fuego cruzado sin armas." },
+    { id: "M5", titulo: "Protocolo Génesis", desc: "Eres impredecible. Tu misión es hackear los servidores de la Asamblea General para cambiar un voto histórico y reescribir el futuro de la humanidad." }
 ];
 
 const P5 = ["Estados Unidos", "Rusia", "China", "Francia", "Reino Unido"];
@@ -38,7 +36,8 @@ let state = {
     agentName: "", country: null, currentResolutions: [], 
     index: 0, matchesCountry: 0, matchesMajority: 0, 
     rebelPoints: 0, humanImpact: 0, abstentions: 0,
-    historyImpact: [], historyTension: [] 
+    historyImpact: [], historyTension: [],
+    sessionId: null
 };
 let myChart = null;
 let trendChart = null;
@@ -89,6 +88,7 @@ btnStart.addEventListener('click', () => {
     state.index = 0; state.matchesCountry = 0; state.matchesMajority = 0; 
     state.rebelPoints = 0; state.humanImpact = 0; state.abstentions = 0;
     state.historyImpact = []; state.historyTension = [];
+    state.sessionId = null;
     show('#screen-round'); renderRound();
 });
 
@@ -156,27 +156,39 @@ function triggerScanner() {
 }
 
 // ==========================================================================
-// FINAL: GRÁFICOS Y NUBE (JSONBIN)
+// FINAL: GRÁFICOS, RANGOS Y SUPABASE
 // ==========================================================================
 async function finishGame() {
     $('#progress-bar').style.width = '100%';
     const total = 7;
     const pctMajority = Math.round((state.matchesMajority / total) * 100);
     
-    let assignedMission = MISSIONS[0]; 
-    if (state.rebelPoints > 40) assignedMission = MISSIONS[0];
-    else if (state.abstentions >= 3) assignedMission = MISSIONS[1];
-    else if (state.matchesCountry >= 5) assignedMission = MISSIONS[2];
-    else if (state.humanImpact > 400) assignedMission = MISSIONS[3];
-    else assignedMission = MISSIONS[4];
+    // Asignar Misión (sin repetir en la misma sesión)
+    let availableMissions = MISSIONS.filter(m => m.id !== state.sessionId);
+    let assignedMission = availableMissions[Math.floor(Math.random() * availableMissions.length)];
+    state.sessionId = assignedMission.id;
+
+    // Calcular Rango
+    let rank = "Agente de Campo";
+    if (state.rebelPoints > 60) rank = "Agente de Élite";
+    else if (state.humanImpact > 500) rank = "Diplomático Humanitario";
+    else if (state.abstentions >= 3) rank = "Observador Neutral";
+    else if (state.matchesCountry >= 5) rank = "Operativo del Sistema";
 
     $('#res-agent').textContent = state.agentName.toUpperCase();
     $('#res-country').textContent = state.country.toUpperCase();
+    $('#res-rank').textContent = rank;
     $('#mission-title').textContent = assignedMission.titulo;
     $('#mission-desc').textContent = assignedMission.desc;
     $('#result-text').innerHTML = `Índice de Rebeldía: <strong>${state.rebelPoints} pts</strong>.<br>Coincidencia Global: <strong>${pctMajority}%</strong>.`;
 
-    // Gráficos (Radar y Tendencia)
+    drawCharts(pctMajority);
+    show('#screen-result');
+
+    await saveAndSubscribeToLeaderboard();
+}
+
+function drawCharts(pctMajority) {
     try {
         const ctxRadar = $('#radarChart').getContext('2d');
         if (myChart) myChart.destroy();
@@ -193,104 +205,32 @@ async function finishGame() {
             data: {
                 labels: ['1', '2', '3', '4', '5', '6', '7'],
                 datasets: [
-                    { label: 'Impacto', data: state.historyImpact, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, tension: 0.4, fill: true, pointBackgroundColor: '#fff' },
-                    { label: 'Tensión', data: state.historyTension, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2, tension: 0.4, fill: true, pointBackgroundColor: '#fff' }
+                    { label: 'Impacto Humanitario', data: state.historyImpact, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, tension: 0.4, fill: true, pointBackgroundColor: '#fff' },
+                    { label: 'Tensión Geopolítica', data: state.historyTension, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2, tension: 0.4, fill: true, pointBackgroundColor: '#fff' }
                 ]
             },
-            options: { responsive: true, plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } }, scales: { y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: {size: 9} } }, x: { grid: { display: false }, ticks: { color: '#94a3b8', font: {size: 9} } } } }
+            options: { 
+                responsive: true, maintainAspectRatio: false,
+                animation: { duration: 2000, easing: 'easeOutQuart' }, // Animación aquí
+                plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } }, 
+                scales: { y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: {size: 9} } }, x: { grid: { display: false }, ticks: { color: '#94a3b8', font: {size: 9} } } } 
+            }
         });
     } catch (e) { console.warn("Chart error", e); }
-
-    // Mostrar pantalla final
-    show('#screen-result');
-
-    // LLAMADA A LA NUBE PARA GUARDAR Y MOSTRAR RANKING
-    await updateCloudLeaderboard();
 }
 
 // ==========================================================================
-// CONEXIÓN CON JSONBIN (NUBE GLOBAL)
+// CONEXIÓN CON SUPABASE (TIEMPO REAL)
 // ==========================================================================
-async function updateCloudLeaderboard() {
+async function saveAndSubscribeToLeaderboard() {
     const list = $('#leaderboard-list');
     list.innerHTML = '<li style="text-align:center; opacity:0.5;">Sincronizando con el satélite...</li>';
 
     try {
-        // 1. LEER LOS DATOS ACTUALES DE LA NUBE
-        const getRes = await fetch(`${JSONBIN_URL}/latest`, {
-            headers: { 'X-Master-Key': JSONBIN_KEY }
-        });
-        const data = await getRes.json();
-        
-        // A veces JSONBin devuelve un objeto con .record, a veces el array directo
-        let scores = data.record ? data.record : data; 
-        
-        // Si está vacío o tiene el comodín inicial, lo reseteamos
-        if (!Array.isArray(scores) || scores.length === 0 || scores[0].name === "Comandante Inicial") {
-            scores = [];
-        }
+        // 1. Guardar el perfil
+        const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .insert([{ agent_name: state.agentName, country: state.country }])
+            .select().single();
 
-        // 2. AÑADIR EL NUEVO PUNTAJE
-        const newRecord = { name: state.agentName, country: state.country, score: state.rebelPoints };
-        scores.push(newRecord);
-
-        // 3. ORDENAR Y DEJAR SOLO EL TOP 10
-        scores.sort((a, b) => b.score - a.score);
-        scores = scores.slice(0, 10);
-
-        // 4. GUARDAR LA LISTA ACTUALIZADA EN LA NUBE
-        await fetch(JSONBIN_URL, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Master-Key': JSONBIN_KEY
-            },
-            body: JSON.stringify(scores)
-        });
-
-        // 5. MOSTRAR EN PANTALLA
-        list.innerHTML = '';
-        scores.forEach((s, index) => {
-            const li = document.createElement('li');
-            li.innerHTML = `<span>${index + 1}. ${s.name} (${s.country})</span> <span style="color:var(--un-light)">${s.score} pts</span>`;
-            if (s.name === state.agentName && s.score === state.rebelPoints) {
-                li.style.background = 'rgba(0, 240, 255, 0.1)';
-                li.style.borderLeft = '3px solid var(--un-light)';
-            }
-            list.appendChild(li);
-        });
-        createSparkles();
-
-    } catch (error) {
-        console.error("Error conectando con la nube:", error);
-        list.innerHTML = '<li style="color:red; text-align:center; font-size:0.8rem;">Error de conexión satelital. Revisa la URL o la Key.</li>';
-    }
-}
-
-function createSparkles() {
-    const container = document.querySelector('.leaderboard-container');
-    for (let i = 0; i < 5; i++) {
-        const sparkle = document.createElement('div');
-        sparkle.className = 'sparkle';
-        sparkle.textContent = '✨';
-        sparkle.style.left = `${Math.random() * 80 + 10}%`;
-        sparkle.style.bottom = `10px`;
-        sparkle.style.animationDelay = `${Math.random() * 1}s`;
-        container.appendChild(sparkle);
-        setTimeout(() => { sparkle.remove(); }, 2500);
-    }
-}
-
-// Compartir
-$('#btn-share').addEventListener('click', () => {
-    const text = `🕵️‍♂️ El sistema me asignó el nombre clave: ${state.agentName}. Obtuve la misión: "${$('#mission-title').textContent}". ¿Te atreves a descubrir la tuya? ${window.location.href}`;
-    if (navigator.share) navigator.share({ title: 'Misión Secreta ONU', text });
-    else navigator.clipboard.writeText(text).then(() => alert("Dossier copiado. ¡Pégalo en tus historias!"));
-});
-
-// Reiniciar
-$('#btn-restart').addEventListener('click', () => {
-    searchInput.value = ''; agentInput.value = ''; state.country = null;
-    btnStart.disabled = true; btnStart.classList.add('disabled');
-    show('#screen-start');
-});
+        if (
