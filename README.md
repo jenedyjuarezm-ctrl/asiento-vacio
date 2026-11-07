@@ -3,7 +3,7 @@ Simulador interactivo del Consejo de Seguridad de la ONU.
 
 Ocupas un asiento del Consejo, votas resoluciones reales sin saber el voto oficial y descubres tu coincidencia con tu país y con la mayoría global.
 
-## El Asiento Vacío 🇺🇳
+
 > Tienes el poder del veto. Úsalo. Luego mira qué habría pasado.
 
 ## 🎮 Jugar Ahora
