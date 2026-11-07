@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Asiento Vacío | Simulador ONU</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Pantalla de Inicio -->
+        <section id="screen-start" class="screen active">
+            <div class="logo">🇺🇳</div>
+            <h1>El Asiento Vacío</h1>
+            <p class="subtitle">Tienes el poder del veto. Úsalo. Luego mira qué habría pasado.</p>
+            <div class="card">
+                <label for="country-select">Elige tu país para ocupar el asiento:</label>
+                <select id="country-select">
+                    <option value="Estados Unidos">Estados Unidos</option>
+                    <option value="Rusia">Rusia</option>
+                    <option value="China">China</option>
+                    <option value="Francia">Francia</option>
+                    <option value="Reino Unido">Reino Unido</option>
+                </select>
+                <button id="btn-start" class="btn-primary">Comenzar Sesión</button>
+            </div>
+        </section>
+
+        <!-- Pantalla de Juego -->
+        <section id="screen-round" class="screen">
+            <div class="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+            <div class="header-round">
+                <span id="round-counter" class="badge">Ronda 1/7</span>
+            </div>
+            <div class="card">
+                <h2 id="res-title"></h2>
+                <p id="res-context" class="context-text"></p>
+                
+                <div class="arguments">
+                    <div class="arg-box pro">
+                        <strong>A favor:</strong> <span id="arg-pro"></span>
+                    </div>
+                    <div class="arg-box con">
+                        <strong>En contra:</strong> <span id="arg-con"></span>
+                    </div>
+                </div>
+
+                <div class="vote-buttons">
+                    <button data-vote="favor" class="btn-vote favor">A favor</button>
+                    <button data-vote="contra" class="btn-vote contra">Veto / Contra</button>
+                    <button data-vote="abstencion" class="btn-vote abstencion">Abstención</button>
+                </div>
+            </div>
+
+            <!-- Panel de Revelación -->
+            <div id="reveal" class="reveal-panel hidden">
+                <h3 id="reveal-title"></h3>
+                <p id="reveal-text"></p>
+                <p class="consequence" id="reveal-consequence"></p>
+                <a id="reveal-source" href="#" target="_blank" class="source-link">Verificar en fuente oficial ↗</a>
+                <button id="btn-next" class="btn-primary">Siguiente Resolución →</button>
+            </div>
+        </section>
+
+        <!-- Pantalla de Resultados -->
+        <section id="screen-result" class="screen">
+            <div class="logo">📊</div>
+            <h2>Resultado de tu Gestión</h2>
+            <div class="card result-card">
+                <p id="result-text" class="result-text"></p>
+            </div>
+            <div class="share-box">
+                <p>Comparte tu resultado:</p>
+                <button id="btn-share" class="btn-secondary">📋 Copiar para compartir</button>
+            </div>
+            <button id="btn-restart" class="btn-primary mt-20">Jugar de nuevo</button>
+        </section>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
