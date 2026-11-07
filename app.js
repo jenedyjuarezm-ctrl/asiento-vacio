@@ -1,5 +1,5 @@
 // ==========================================================================
-// DATOS (Nuevas resoluciones añadidas para que no sea siempre igual)
+// 1. DATOS, PAÍSES, RESOLUCIONES Y MISIONES
 // ==========================================================================
 const COUNTRIES = ["Afganistán", "Albania", "Alemania", "Andorra", "Angola", "Argentina", "Armenia", "Australia", "Austria", "Azerbaiyán", "Bahamas", "Bangladés", "Barbados", "Baréin", "Bélgica", "Belice", "Benín", "Bielorrusia", "Bolivia", "Bosnia y Herzegovina", "Botsuana", "Brasil", "Brunéi", "Bulgaria", "Burkina Faso", "Burundi", "Bután", "Cabo Verde", "Camboya", "Camerún", "Canadá", "Catar", "Chad", "Chile", "China", "Chipre", "Colombia", "Comoras", "Corea del Norte", "Corea del Sur", "Costa de Marfil", "Costa Rica", "Croacia", "Cuba", "Dinamarca", "Dominica", "Ecuador", "Egipto", "El Salvador", "Emiratos Árabes Unidos", "Eritrea", "Eslovaquia", "Eslovenia", "España", "Estados Unidos", "Estonia", "Etiopía", "Filipinas", "Finlandia", "Fiyi", "Francia", "Gabón", "Gambia", "Georgia", "Ghana", "Granada", "Grecia", "Guatemala", "Guinea", "Guinea-Bisáu", "Guinea Ecuatorial", "Guyana", "Haití", "Honduras", "Hungría", "India", "Indonesia", "Irak", "Irán", "Irlanda", "Islandia", "Islas Marshall", "Islas Salomón", "Israel", "Italia", "Jamaica", "Japón", "Jordania", "Kazajistán", "Kenia", "Kirguistán", "Kiribati", "Kuwait", "Laos", "Lesoto", "Letonia", "Líbano", "Liberia", "Libia", "Liechtenstein", "Lituania", "Luxemburgo", "Macedonia del Norte", "Madagascar", "Malasia", "Malaui", "Maldivas", "Malí", "Malta", "Marruecos", "Mauricio", "Mauritania", "México", "Micronesia", "Moldavia", "Mónaco", "Mongolia", "Montenegro", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Nicaragua", "Níger", "Nigeria", "Noruega", "Nueva Zelanda", "Omán", "Países Bajos", "Pakistán", "Palaos", "Panamá", "Papúa Nueva Guinea", "Paraguay", "Perú", "Polonia", "Portugal", "Reino Unido", "República Centroafricana", "República Checa", "República del Congo", "República Democrática del Congo", "República Dominicana", "Ruanda", "Rumania", "Rusia", "Samoa", "San Cristóbal y Nieves", "San Marino", "San Vicente y las Granadinas", "Santa Lucía", "Santo Tomé y Príncipe", "Senegal", "Serbia", "Seychelles", "Sierra Leona", "Singapur", "Siria", "Somalia", "Sri Lanka", "Suazilandia", "Sudáfrica", "Sudán", "Sudán del Sur", "Suecia", "Suiza", "Surinam", "Tailandia", "Tanzania", "Tayikistán", "Timor Oriental", "Togo", "Tonga", "Trinidad y Tobago", "Túnez", "Turkmenistán", "Turquía", "Tuvalu", "Ucrania", "Uganda", "Uruguay", "Uzbekistán", "Vanuatu", "Venezuela", "Vietnam", "Yemen", "Yibuti", "Zambia", "Zimbabue"];
 
@@ -16,7 +16,6 @@ const RESOLUTIONS = [
     { id: "R2620", titulo: "Cambio Climático y Seguridad", contexto: "Las sequías y desastres naturales causan conflictos armados. Se busca declarar el clima como amenaza a la paz mundial.", a_favor: "Integrar la crisis climática en la agenda de seguridad global.", en_contra: "Rusia y China temen que sea una excusa para intervenir en países.", voto_real: { "Estados Unidos": "favor", "Rusia": "contra", "China": "contra", "Francia": "favor", "Reino Unido": "favor" }, mayoria: "favor", resultado: "Vetada por Rusia y China (12-2-1)", consecuencia: "El Consejo se fracturó sobre cómo abordar el clima.", impacto_global: 30, tension_potencias: 90, fuente: "https://www.un.org/press/en/2021/sc14786.doc.htm" }
 ];
 
-// MISIONES SECRETAS
 const MISSIONS = [
     { id: "M1", titulo: "Operación Tormenta de Fuego", desc: "Has desafiado a las superpotencias. Tu misión es infiltrarte en las reuniones secretas del G7 y filtrar sus planes de expansión militar." },
     { id: "M2", titulo: "El Pacificador Ciego", desc: "Te has abstenido demasiado. Tu misión es viajar a la zona de conflicto y mediar un acuerdo de paz imposible entre facciones radicales." },
@@ -33,7 +32,7 @@ const $ = (sel) => document.querySelector(sel);
 const show = (id) => { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); $(id).classList.add('active'); };
 
 // ==========================================================================
-// LÓGICA DE SELECCIÓN (País y Agente)
+// 2. SELECCIÓN (País y Agente)
 // ==========================================================================
 const searchInput = $('#country-search');
 const agentInput = $('#agent-name');
@@ -58,7 +57,7 @@ searchInput.addEventListener('input', (e) => {
     const filtered = COUNTRIES.filter(c => c.toLowerCase().includes(val));
     if (filtered.length > 0) {
         countryList.classList.remove('hidden');
-        filtered.slice(0, 5).forEach(c => { // Solo mostramos 5 para no saturar
+        filtered.slice(0, 5).forEach(c => {
             const li = document.createElement('li');
             li.textContent = c;
             li.addEventListener('click', () => {
@@ -72,12 +71,11 @@ searchInput.addEventListener('input', (e) => {
 });
 
 // ==========================================================================
-// INICIO DEL JUEGO (Aleatoriedad)
+// 3. INICIO DEL JUEGO (Aleatoriedad)
 // ==========================================================================
 btnStart.addEventListener('click', () => {
     if(!state.country || !agentInput.value) return;
     
-    // Mezclar resoluciones y tomar 7 al azar
     state.currentResolutions = [...RESOLUTIONS].sort(() => 0.5 - Math.random()).slice(0, 7);
     
     state.agentName = agentInput.value;
@@ -116,7 +114,6 @@ document.querySelectorAll('.btn-vote').forEach(btn => {
         
         if (choice === "abstencion") state.abstentions++;
 
-        // Sistema de rebeldía
         let rebelText = "";
         if (r.voto_real["Estados Unidos"] !== choice && choice !== "abstencion") { state.rebelPoints += 15; rebelText = "Desafiaste a EE.UU."; }
         if (r.voto_real["Rusia"] !== choice && choice !== "abstencion") { state.rebelPoints += 15; rebelText = "Desafiaste a Rusia."; }
@@ -141,22 +138,29 @@ document.querySelectorAll('.btn-vote').forEach(btn => {
 
 $('#btn-next').addEventListener('click', () => {
     state.index++;
-    state.index >= 7 ? triggerScanner() : renderRound();
+    if (state.index >= 7) {
+        triggerScanner();
+    } else {
+        renderRound();
+    }
 });
 
 // ==========================================================================
-// FINAL: SCANNER, SATÉLITE Y MISIÓN SECRETA
+// 4. FINAL: SCANNER, SATÉLITE Y MISIÓN SECRETA (¡AQUÍ ESTÁ LA MAGIA!)
 // ==========================================================================
 function triggerScanner() {
-    // 1. Mostrar animación de láser
+    // Ocultar botón de siguiente y el panel de revelación anterior
+    $('#reveal').classList.add('hidden');
+    
+    // Mostrar animación de láser
     const scanner = $('#laser-scanner');
     scanner.classList.remove('hidden');
     
-    // 2. Esperar a que el láser termine (2 segundos) y mostrar resultados
+    // Esperar 2.5 segundos a que el láser termine y mostrar resultados
     setTimeout(() => {
         scanner.classList.add('hidden');
         finishGame();
-    }, 2000);
+    }, 2500);
 }
 
 function finishGame() {
@@ -165,7 +169,7 @@ function finishGame() {
     const pctMajority = Math.round((state.matchesMajority / total) * 100);
     
     // Asignar Misión Secreta según comportamiento
-    let assignedMission = MISSIONS[0]; // Por defecto (Rebelde)
+    let assignedMission = MISSIONS[0]; 
     if (state.rebelPoints > 40) assignedMission = MISSIONS[0];
     else if (state.abstentions >= 3) assignedMission = MISSIONS[1];
     else if (state.matchesCountry >= 5) assignedMission = MISSIONS[2];
@@ -182,7 +186,7 @@ function finishGame() {
     finalText += `Coincidencia Global: <strong>${pctMajority}%</strong>.`;
     $('#result-text').innerHTML = finalText;
 
-    // Gráfico
+    // Gráfico Radar
     try {
         const ctx = $('#radarChart').getContext('2d');
         if (myChart) myChart.destroy();
@@ -200,14 +204,21 @@ function finishGame() {
         });
     } catch (e) { console.warn("Chart error", e); }
 
+    // ¡MOSTRAR LA PANTALLA FINAL!
     show('#screen-result');
 }
 
+// Compartir Dossier
 $('#btn-share').addEventListener('click', () => {
     const text = `🕵️‍♂️ El sistema me ha asignado el nombre clave: ${state.agentName}. Representé a ${state.country} en la ONU y obtuve la misión secreta: "${$('#mission-title').textContent}". ¿Te atreves a descubrir la tuya? ${window.location.href}`;
-    navigator.share ? navigator.share({ title: 'Misión Secreta ONU', text }) : navigator.clipboard.writeText(text).then(()=>alert("Dossier copiado. ¡Pégalo en tus historias!"));
+    if (navigator.share) {
+        navigator.share({ title: 'Misión Secreta ONU', text });
+    } else {
+        navigator.clipboard.writeText(text).then(() => alert("Dossier copiado. ¡Pégalo en tus historias!"));
+    }
 });
 
+// Reiniciar Juego
 $('#btn-restart').addEventListener('click', () => {
     searchInput.value = ''; agentInput.value = ''; state.country = null;
     btnStart.disabled = true; btnStart.classList.add('disabled');
