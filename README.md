@@ -8,7 +8,7 @@ Ocupas un asiento del Consejo, votas resoluciones reales sin saber el voto ofici
 
 ## 🎮 Jugar Ahora
 Puedes probar el producto interactivo en vivo aquí:
-👉 **[https://jenedyjuarezm-ctrl.github.io/el-asiento-vacio/](https://jenedyjuarezm-ctrl.github.io/el-asiento-vacio/)**
+👉 **[https://jenedyjuarezm-ctrl.github.io/asiento-vacio/](https://jenedyjuarezm-ctrl.github.io/asiento-vacio/)**
 
 ## 📖 ¿De qué trata?
 "El Asiento Vacío" es una experiencia web interactiva donde el usuario ocupa un asiento en el Consejo de Seguridad de la ONU. A lo largo de 7 rondas, el jugador debe votar resoluciones reales (A favor, En contra/Veto o Abstención) sin saber cuál fue el voto oficial de su país. 
