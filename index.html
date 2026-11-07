@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>El Asiento Vacío | Comando Geopolítico</title>
+    <title>El Asiento Vacío | Protocolo Blackout</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@300;500;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -22,10 +22,15 @@
             <div class="glass-panel">
                 <div class="logo">🇺🇳</div>
                 <h1>El Asiento Vacío</h1>
-                <p class="subtitle">Terminal de Decisiones del Consejo de Seguridad</p>
+                <p class="subtitle">Terminal de Reclutamiento del Consejo de Seguridad</p>
                 
                 <div class="input-group">
-                    <label for="country-search">Identifica tu nación para asumir el control:</label>
+                    <label>Designación del Agente (Tu apodo):</label>
+                    <input type="text" id="agent-alias" placeholder="Ej. Fantasma, Cóndor, Zero..." autocomplete="off" maxlength="15">
+                </div>
+
+                <div class="input-group">
+                    <label>Nación a representar:</label>
                     <input type="text" id="country-search" placeholder="Ej. Cuba, México, Rusia..." autocomplete="off">
                     <ul id="country-list" class="dropdown-list hidden"></ul>
                 </div>
@@ -41,26 +46,18 @@
                 <span id="round-counter" class="badge alt">Resolución 1/7</span>
             </div>
             
-            <div class="progress-container">
-                <div id="progress-bar"></div>
-            </div>
+            <div class="progress-container"><div id="progress-bar"></div></div>
 
             <div class="glass-panel">
                 <h2 id="res-title"></h2>
                 <div class="intel-box">
-                    <span class="intel-label">// INFORME DE INTELIGENCIA</span>
+                    <span class="intel-label">// INFORME DE INTELIGENCIA SATELITAL</span>
                     <p id="res-context" class="context-text"></p>
                 </div>
                 
                 <div class="arguments">
-                    <div class="arg-box pro">
-                        <div class="icon">🟢</div>
-                        <div><strong>Postura Diplomática:</strong> <span id="arg-pro"></span></div>
-                    </div>
-                    <div class="arg-box con">
-                        <div class="icon">🔴</div>
-                        <div><strong>Riesgo Geopolítico:</strong> <span id="arg-con"></span></div>
-                    </div>
+                    <div class="arg-box pro"><div class="icon">🟢</div><div><strong>Protocolo Ético:</strong> <span id="arg-pro"></span></div></div>
+                    <div class="arg-box con"><div class="icon">🔴</div><div><strong>Riesgo de Conflicto:</strong> <span id="arg-con"></span></div></div>
                 </div>
 
                 <div class="vote-buttons">
@@ -70,35 +67,46 @@
                 </div>
             </div>
 
-            <!-- Panel de Revelación -->
             <div id="reveal" class="glass-panel reveal-panel hidden">
                 <h3 id="reveal-title">// ANÁLISIS DE IMPACTO</h3>
                 <p id="reveal-text"></p>
                 <div id="reveal-analysis" class="analysis-box"></div>
                 <p class="consequence" id="reveal-consequence"></p>
-                
-                <a id="reveal-source" href="#" target="_blank" class="source-link">
-                    🛰️ [Verificar datos en UN Digital Library] ↗
-                </a>
-                
+                <a id="reveal-source" href="#" target="_blank" class="source-link">🛰️ [Verificar datos en UN Digital Library] ↗</a>
                 <button id="btn-next" class="btn-primary">Siguiente Archivo →</button>
             </div>
         </section>
 
-        <!-- Pantalla de Resultados -->
+        <!-- Pantalla de Resultados y Misión -->
         <section id="screen-result" class="screen">
             <div class="glass-panel result-panel">
-                <h2>Perfil de Gestión Completado</h2>
+                <h2 id="result-title">Perfil de Gestión Completado</h2>
                 <p id="result-subtitle" class="subtitle"></p>
                 
-                <div class="chart-container">
+                <div class="chart-container" id="chart-box">
                     <canvas id="radarChart"></canvas>
                 </div>
 
                 <div id="result-text" class="result-text"></div>
                 
-                <button id="btn-share" class="btn-secondary">📡 Transmitir Resultado</button>
-                <button id="btn-restart" class="btn-primary mt-20">Nueva Simulación</button>
+                <!-- BOTÓN SECRETO PARA REVELAR MISIÓN -->
+                <button id="btn-decrypt" class="btn-primary mt-20" style="background: linear-gradient(90deg, #ef4444, #f59e0b); border-color: #f59e0b;">🔒 Descifrar Misión Clasificada</button>
+                
+                <!-- PANTALLA DE ESCÁNER LÁSER (OCULTA) -->
+                <div id="classified-mission" class="classified-box hidden">
+                    <div class="laser-scanner"></div>
+                    <div class="terminal-text" id="mission-terminal"></div>
+                    <div id="mission-content" class="mission-content hidden">
+                        <h3 id="mission-rank"></h3>
+                        <p id="mission-desc"></p>
+                        <div class="classified-stamp">TOP SECRET</div>
+                    </div>
+                </div>
+
+                <div id="share-actions" class="hidden">
+                    <button id="btn-share" class="btn-secondary mt-20">📡 Transmitir Credenciales</button>
+                    <button id="btn-restart" class="btn-secondary mt-20">Nueva Simulación</button>
+                </div>
             </div>
         </section>
     </div>
