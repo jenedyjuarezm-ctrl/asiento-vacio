@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>El Asiento Vacío | Protocolo Blackout</title>
+    <title>El Asiento Vacío | Protocolo Black Ops</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@300;500;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <!-- Fondo de Circuitos Animados -->
+    <!-- Fondo Animado -->
     <div class="circuit-bg">
         <div class="glow-orb orb-1"></div>
         <div class="glow-orb orb-2"></div>
         <div class="circuit-lines"></div>
     </div>
+
+    <!-- Efecto Láser de Escáner (Oculto al inicio) -->
+    <div id="laser-scanner" class="hidden"></div>
 
     <div id="app">
         <!-- Pantalla de Inicio -->
@@ -22,16 +25,16 @@
             <div class="glass-panel">
                 <div class="logo">🇺🇳</div>
                 <h1>El Asiento Vacío</h1>
-                <p class="subtitle">Terminal de Reclutamiento del Consejo de Seguridad</p>
+                <p class="subtitle">Terminal de Decisiones Clasificadas</p>
                 
                 <div class="input-group">
-                    <label>Designación del Agente (Tu apodo):</label>
-                    <input type="text" id="agent-alias" placeholder="Ej. Fantasma, Cóndor, Zero..." autocomplete="off" maxlength="15">
+                    <label for="agent-name">Nombre Clave del Agente:</label>
+                    <input type="text" id="agent-name" placeholder="Ej. Agente Fénix, El Pacificador..." maxlength="15">
                 </div>
 
                 <div class="input-group">
-                    <label>Nación a representar:</label>
-                    <input type="text" id="country-search" placeholder="Ej. Cuba, México, Rusia..." autocomplete="off">
+                    <label for="country-search">Nación a Representar:</label>
+                    <input type="text" id="country-search" placeholder="Ej. Cuba, Rusia, EE.UU..." autocomplete="off">
                     <ul id="country-list" class="dropdown-list hidden"></ul>
                 </div>
 
@@ -42,22 +45,30 @@
         <!-- Pantalla de Juego -->
         <section id="screen-round" class="screen">
             <div class="header-game">
-                <span id="country-badge" class="badge">Agente: ...</span>
-                <span id="round-counter" class="badge alt">Resolución 1/7</span>
+                <span id="agent-badge" class="badge">Agente: ...</span>
+                <span id="round-counter" class="badge alt">Archivo 1/7</span>
             </div>
             
-            <div class="progress-container"><div id="progress-bar"></div></div>
+            <div class="progress-container">
+                <div id="progress-bar"></div>
+            </div>
 
             <div class="glass-panel">
                 <h2 id="res-title"></h2>
                 <div class="intel-box">
-                    <span class="intel-label">// INFORME DE INTELIGENCIA SATELITAL</span>
+                    <span class="intel-label">// INFORME DE INTELIGENCIA</span>
                     <p id="res-context" class="context-text"></p>
                 </div>
                 
                 <div class="arguments">
-                    <div class="arg-box pro"><div class="icon">🟢</div><div><strong>Protocolo Ético:</strong> <span id="arg-pro"></span></div></div>
-                    <div class="arg-box con"><div class="icon">🔴</div><div><strong>Riesgo de Conflicto:</strong> <span id="arg-con"></span></div></div>
+                    <div class="arg-box pro">
+                        <div class="icon">🟢</div>
+                        <div><strong>Opción Diplomática:</strong> <span id="arg-pro"></span></div>
+                    </div>
+                    <div class="arg-box con">
+                        <div class="icon">🔴</div>
+                        <div><strong>Riesgo Geopolítico:</strong> <span id="arg-con"></span></div>
+                    </div>
                 </div>
 
                 <div class="vote-buttons">
@@ -67,6 +78,7 @@
                 </div>
             </div>
 
+            <!-- Panel de Revelación -->
             <div id="reveal" class="glass-panel reveal-panel hidden">
                 <h3 id="reveal-title">// ANÁLISIS DE IMPACTO</h3>
                 <p id="reveal-text"></p>
@@ -77,36 +89,34 @@
             </div>
         </section>
 
-        <!-- Pantalla de Resultados y Misión -->
+        <!-- Pantalla de Resultados y Misión Secreta -->
         <section id="screen-result" class="screen">
-            <div class="glass-panel result-panel">
-                <h2 id="result-title">Perfil de Gestión Completado</h2>
-                <p id="result-subtitle" class="subtitle"></p>
+            <div class="glass-panel result-panel relative-container">
                 
-                <div class="chart-container" id="chart-box">
+                <!-- Sello Top Secret -->
+                <div class="stamp">TOP SECRET</div>
+
+                <!-- Animación de Satélite -->
+                <div class="satellite-anim">🛰️</div>
+
+                <h2 class="glitch-text" data-text="MISIÓN ASIGNADA">MISIÓN ASIGNADA</h2>
+                
+                <div class="dossier">
+                    <p><strong>AGENTE:</strong> <span id="res-agent"></span></p>
+                    <p><strong>NACIÓN:</strong> <span id="res-country"></span></p>
+                    <hr>
+                    <h3 id="mission-title" class="mission-title"></h3>
+                    <p id="mission-desc" class="mission-desc"></p>
+                </div>
+
+                <div class="chart-container">
                     <canvas id="radarChart"></canvas>
                 </div>
 
                 <div id="result-text" class="result-text"></div>
                 
-                <!-- BOTÓN SECRETO PARA REVELAR MISIÓN -->
-                <button id="btn-decrypt" class="btn-primary mt-20" style="background: linear-gradient(90deg, #ef4444, #f59e0b); border-color: #f59e0b;">🔒 Descifrar Misión Clasificada</button>
-                
-                <!-- PANTALLA DE ESCÁNER LÁSER (OCULTA) -->
-                <div id="classified-mission" class="classified-box hidden">
-                    <div class="laser-scanner"></div>
-                    <div class="terminal-text" id="mission-terminal"></div>
-                    <div id="mission-content" class="mission-content hidden">
-                        <h3 id="mission-rank"></h3>
-                        <p id="mission-desc"></p>
-                        <div class="classified-stamp">TOP SECRET</div>
-                    </div>
-                </div>
-
-                <div id="share-actions" class="hidden">
-                    <button id="btn-share" class="btn-secondary mt-20">📡 Transmitir Credenciales</button>
-                    <button id="btn-restart" class="btn-secondary mt-20">Nueva Simulación</button>
-                </div>
+                <button id="btn-share" class="btn-secondary">📡 Transmitir Dossier</button>
+                <button id="btn-restart" class="btn-primary mt-20">Nueva Misión (Reiniciar)</button>
             </div>
         </section>
     </div>
