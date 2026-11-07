@@ -1,12 +1,12 @@
 // ==========================================================================
-// CONFIGURACIÓN DE SUPABASE
+// 1. CONFIGURACIÓN DE SUPABASE
 // ==========================================================================
 const SUPABASE_URL = 'https://jntyotrddlrzccoauram.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_H8uhN5DbCWLslwo4uJlDuw_jdAjE67K';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ==========================================================================
-// DATOS Y RESOLUCIONES
+// 2. DATOS Y RESOLUCIONES
 // ==========================================================================
 const COUNTRIES = ["Afganistán", "Albania", "Alemania", "Andorra", "Angola", "Argentina", "Armenia", "Australia", "Austria", "Azerbaiyán", "Bahamas", "Bangladés", "Barbados", "Baréin", "Bélgica", "Belice", "Benín", "Bielorrusia", "Bolivia", "Bosnia y Herzegovina", "Botsuana", "Brasil", "Brunéi", "Bulgaria", "Burkina Faso", "Burundi", "Bután", "Cabo Verde", "Camboya", "Camerún", "Canadá", "Catar", "Chad", "Chile", "China", "Chipre", "Colombia", "Comoras", "Corea del Norte", "Corea del Sur", "Costa de Marfil", "Costa Rica", "Croacia", "Cuba", "Dinamarca", "Dominica", "Ecuador", "Egipto", "El Salvador", "Emiratos Árabes Unidos", "Eritrea", "Eslovaquia", "Eslovenia", "España", "Estados Unidos", "Estonia", "Etiopía", "Filipinas", "Finlandia", "Fiyi", "Francia", "Gabón", "Gambia", "Georgia", "Ghana", "Granada", "Grecia", "Guatemala", "Guinea", "Guinea-Bisáu", "Guinea Ecuatorial", "Guyana", "Haití", "Honduras", "Hungría", "India", "Indonesia", "Irak", "Irán", "Irlanda", "Islandia", "Islas Marshall", "Islas Salomón", "Israel", "Italia", "Jamaica", "Japón", "Jordania", "Kazajistán", "Kenia", "Kirguistán", "Kiribati", "Kuwait", "Laos", "Lesoto", "Letonia", "Líbano", "Liberia", "Libia", "Liechtenstein", "Lituania", "Luxemburgo", "Macedonia del Norte", "Madagascar", "Malasia", "Malaui", "Maldivas", "Malí", "Malta", "Marruecos", "Mauricio", "Mauritania", "México", "Micronesia", "Moldavia", "Mónaco", "Mongolia", "Montenegro", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Nicaragua", "Níger", "Nigeria", "Noruega", "Nueva Zelanda", "Omán", "Países Bajos", "Pakistán", "Palaos", "Panamá", "Papúa Nueva Guinea", "Paraguay", "Perú", "Polonia", "Portugal", "Reino Unido", "República Centroafricana", "República Checa", "República del Congo", "República Democrática del Congo", "República Dominicana", "Ruanda", "Rumania", "Rusia", "Samoa", "San Cristóbal y Nieves", "San Marino", "San Vicente y las Granadinas", "Santa Lucía", "Santo Tomé y Príncipe", "Senegal", "Serbia", "Seychelles", "Sierra Leona", "Singapur", "Siria", "Somalia", "Sri Lanka", "Suazilandia", "Sudáfrica", "Sudán", "Sudán del Sur", "Suecia", "Suiza", "Surinam", "Tailandia", "Tanzania", "Tayikistán", "Timor Oriental", "Togo", "Tonga", "Trinidad y Tobago", "Túnez", "Turkmenistán", "Turquía", "Tuvalu", "Ucrania", "Uganda", "Uruguay", "Uzbekistán", "Vanuatu", "Venezuela", "Vietnam", "Yemen", "Yibuti", "Zambia", "Zimbabue"];
 
@@ -46,34 +46,27 @@ const $ = (sel) => document.querySelector(sel);
 const show = (id) => { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); $(id).classList.add('active'); };
 
 // ==========================================================================
-// LÓGICA DE INICIO Y JUEGO (CORREGIDA)
+// 3. LÓGICA DE INICIO Y RENDERIZADO
 // ==========================================================================
 const searchInput = $('#country-search');
 const agentInput = $('#agent-name');
 const countryList = $('#country-list');
 const btnStart = $('#btn-start');
 
-// Esta función revisa si hay texto en AMBOS campos para activar el botón
 function checkForm() {
     if (searchInput.value.trim().length > 0 && agentInput.value.trim().length > 0) {
-        btnStart.disabled = false; 
-        btnStart.classList.remove('disabled');
+        btnStart.disabled = false; btnStart.classList.remove('disabled');
     } else {
-        btnStart.disabled = true; 
-        btnStart.classList.add('disabled');
+        btnStart.disabled = true; btnStart.classList.add('disabled');
     }
 }
-
-// Escuchamos cuando el usuario escribe en cualquier campo
 agentInput.addEventListener('input', checkForm);
+
 searchInput.addEventListener('input', (e) => {
-    checkForm(); // Revisa si debe activar el botón
-    
-    // Lógica para el desplegable de países
+    checkForm();
     const val = e.target.value.toLowerCase();
     countryList.innerHTML = '';
     if (val.length === 0) { countryList.classList.add('hidden'); return; }
-    
     const filtered = COUNTRIES.filter(c => c.toLowerCase().includes(val));
     if (filtered.length > 0) {
         countryList.classList.remove('hidden');
@@ -83,14 +76,13 @@ searchInput.addEventListener('input', (e) => {
             li.addEventListener('click', () => {
                 searchInput.value = c; 
                 countryList.classList.add('hidden'); 
-                checkForm(); // Vuelve a revisar para iluminar el botón
+                checkForm(); 
             });
             countryList.appendChild(li);
         });
     } else { countryList.classList.add('hidden'); }
 });
 
-// Ocultar lista si se toca afuera
 document.addEventListener('click', (e) => {
     if (!searchInput.contains(e.target) && !countryList.contains(e.target)) {
         countryList.classList.add('hidden');
@@ -98,13 +90,9 @@ document.addEventListener('click', (e) => {
 });
 
 btnStart.addEventListener('click', () => {
-    // Validación de seguridad final
     if(!searchInput.value.trim() || !agentInput.value.trim()) return;
-    
-    // Guardamos los valores reales
     state.country = searchInput.value.trim();
     state.agentName = agentInput.value.trim();
-
     state.currentResolutions = [...RESOLUTIONS].sort(() => 0.5 - Math.random()).slice(0, 7);
     state.index = 0; state.matchesCountry = 0; state.matchesMajority = 0; 
     state.rebelPoints = 0; state.humanImpact = 0; state.abstentions = 0;
@@ -113,5 +101,236 @@ btnStart.addEventListener('click', () => {
     show('#screen-round'); renderRound();
 });
 
-// (El resto de las funciones renderRound, votos, supabase, etc., siguen exactamente igual que en el código anterior)
-// ...
+function renderRound() {
+    const r = state.currentResolutions[state.index];
+    $('#agent-badge').textContent = `Agente: ${state.agentName}`;
+    $('#progress-bar').style.width = `${(state.index / 7) * 100}%`;
+    $('#round-counter').textContent = `Archivo ${state.index + 1}/7`;
+    $('#res-title').textContent = r.titulo;
+    $('#res-context').textContent = r.contexto;
+    $('#arg-pro').textContent = r.a_favor;
+    $('#arg-con').textContent = r.en_contra;
+    $('#reveal').classList.add('hidden');
+    document.querySelectorAll('.btn-vote').forEach(b => b.disabled = false);
+}
+
+// ==========================================================================
+// 4. LÓGICA DE VOTACIÓN
+// ==========================================================================
+document.querySelectorAll('.btn-vote').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const choice = btn.dataset.vote;
+        const r = state.currentResolutions[state.index];
+        const isP5 = P5.includes(state.country);
+        const realCountryVote = isP5 ? r.voto_real[state.country] : r.mayoria;
+
+        if (realCountryVote === choice) state.matchesCountry++;
+        if (r.mayoria === choice) { state.matchesMajority++; state.humanImpact += r.impacto_global; } 
+        else { state.humanImpact += (100 - r.impacto_global) / 2; }
+        if (choice === "abstencion") state.abstentions++;
+
+        let rebelText = "";
+        if (r.voto_real["Estados Unidos"] !== choice && choice !== "abstencion") { state.rebelPoints += 15; rebelText = "Desafiaste a EE.UU."; }
+        if (r.voto_real["Rusia"] !== choice && choice !== "abstencion") { state.rebelPoints += 15; rebelText = "Desafiaste a Rusia."; }
+
+        let impactPoint = r.impacto_global;
+        if (choice === "contra" && r.mayoria === "favor") impactPoint = 100 - r.impacto_global;
+        if (choice === "abstencion") impactPoint = 50;
+        state.historyImpact.push(impactPoint);
+        state.historyTension.push(r.tension_potencias);
+
+        $('#reveal').classList.remove('hidden');
+        let resultText = `Tú votaste <strong>${choice.toUpperCase()}</strong>. `;
+        resultText += isP5 ? `Tu país votó <strong>${realCountryVote.toUpperCase()}</strong>.` : `Como miembro rotativo, tu voto no tiene veto.`;
+        $('#reveal-text').innerHTML = resultText;
+
+        let analysisHTML = `<span>📊 IMPACTO GLOBAL: ${r.impacto_global}%</span><span>🔥 TENSIÓN: ${r.tension_potencias}%</span>`;
+        if(rebelText) analysisHTML += `<span class="text-bad">⚠️ ALERTA: ${rebelText}</span>`;
+        else analysisHTML += `<span class="text-good">✅ ALINEACIÓN: Votaste con el consenso.</span>`;
+        $('#reveal-analysis').innerHTML = analysisHTML;
+        $('#reveal-consequence').textContent = `// CONSECUENCIA: ${r.consecuencia}`;
+        $('#reveal-source').href = r.fuente;
+        
+        document.querySelectorAll('.btn-vote').forEach(b => b.disabled = true);
+    });
+});
+
+$('#btn-next').addEventListener('click', () => {
+    state.index++;
+    if (state.index >= 7) { triggerScanner(); } else { renderRound(); }
+});
+
+function triggerScanner() {
+    $('#reveal').classList.add('hidden');
+    const scanner = $('#laser-scanner');
+    scanner.classList.remove('hidden');
+    setTimeout(() => { scanner.classList.add('hidden'); finishGame(); }, 2500);
+}
+
+// ==========================================================================
+// 5. FINAL: GRÁFICOS, RANGOS Y SUPABASE
+// ==========================================================================
+async function finishGame() {
+    $('#progress-bar').style.width = '100%';
+    const total = 7;
+    const pctMajority = Math.round((state.matchesMajority / total) * 100);
+    
+    let availableMissions = MISSIONS.filter(m => m.id !== state.sessionId);
+    let assignedMission = availableMissions[Math.floor(Math.random() * availableMissions.length)];
+    state.sessionId = assignedMission.id;
+
+    let rank = "Agente de Campo";
+    if (state.rebelPoints > 60) rank = "Agente de Élite";
+    else if (state.humanImpact > 500) rank = "Diplomático Humanitario";
+    else if (state.abstentions >= 3) rank = "Observador Neutral";
+    else if (state.matchesCountry >= 5) rank = "Operativo del Sistema";
+
+    $('#res-agent').textContent = state.agentName.toUpperCase();
+    $('#res-country').textContent = state.country.toUpperCase();
+    $('#res-rank').textContent = rank;
+    $('#mission-title').textContent = assignedMission.titulo;
+    $('#mission-desc').textContent = assignedMission.desc;
+    $('#result-text').innerHTML = `Índice de Rebeldía: <strong>${state.rebelPoints} pts</strong>.<br>Coincidencia Global: <strong>${pctMajority}%</strong>.`;
+
+    drawCharts(pctMajority);
+    show('#screen-result');
+
+    await saveAndSubscribeToLeaderboard();
+}
+
+function drawCharts(pctMajority) {
+    try {
+        const ctxRadar = $('#radarChart').getContext('2d');
+        if (myChart) myChart.destroy();
+        myChart = new Chart(ctxRadar, {
+            type: 'radar',
+            data: { labels: ['Humanitario', 'Consenso', 'Rebeldía', 'Estabilidad'], datasets: [{ data: [Math.min(state.humanImpact / 5, 100), pctMajority, Math.min(state.rebelPoints * 1.5, 100), 100 - Math.min(state.rebelPoints * 1.5, 100)], backgroundColor: 'rgba(0, 240, 255, 0.2)', borderColor: '#00f0ff', borderWidth: 2, pointBackgroundColor: '#fff' }] },
+            options: { scales: { r: { angleLines: { color: 'rgba(255, 255, 255, 0.1)' }, grid: { color: 'rgba(255, 255, 255, 0.1)' }, pointLabels: { color: '#94a3b8', font: { size: 10, family: 'Share Tech Mono' } }, ticks: { display: false, min: 0, max: 100 } } }, plugins: { legend: { display: false } } }
+        });
+
+        const ctxTrend = $('#trendChart').getContext('2d');
+        if (trendChart) trendChart.destroy();
+        trendChart = new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: ['1', '2', '3', '4', '5', '6', '7'],
+                datasets: [
+                    { label: 'Impacto Humanitario', data: state.historyImpact, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, tension: 0.4, fill: true, pointBackgroundColor: '#fff' },
+                    { label: 'Tensión Geopolítica', data: state.historyTension, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2, tension: 0.4, fill: true, pointBackgroundColor: '#fff' }
+                ]
+            },
+            options: { 
+                responsive: true, maintainAspectRatio: false,
+                animation: { duration: 2000, easing: 'easeOutQuart' }, 
+                plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } }, 
+                scales: { y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: {size: 9} } }, x: { grid: { display: false }, ticks: { color: '#94a3b8', font: {size: 9} } } } 
+            }
+        });
+    } catch (e) { console.warn("Chart error", e); }
+}
+
+async function saveAndSubscribeToLeaderboard() {
+    const list = $('#leaderboard-list');
+    list.innerHTML = '<li style="text-align:center; opacity:0.5;">Sincronizando con el satélite...</li>';
+
+    try {
+        const { data: profileData, error: profileError } = await supabaseClient
+            .from('profiles')
+            .insert([{ agent_name: state.agentName, country: state.country }])
+            .select().single();
+
+        if (profileError) throw profileError;
+
+        const { error: sessionError } = await supabaseClient
+            .from('game_sessions')
+            .insert([{
+                profile_id: profileData.id,
+                rebel_points: state.rebelPoints,
+                human_impact: state.humanImpact,
+                majority_match: state.matchesMajority,
+                mission_id: state.sessionId
+            }]);
+
+        if (sessionError) throw sessionError;
+
+        await fetchLeaderboard();
+
+        supabaseClient
+            .channel('game_sessions_changes')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_sessions' }, () => {
+                fetchLeaderboard(true);
+            })
+            .subscribe();
+
+    } catch (error) {
+        console.error("Error con Supabase:", error);
+        list.innerHTML = '<li style="color:red; text-align:center; font-size:0.8rem;">Error de conexión. Revisa las credenciales.</li>';
+    }
+}
+
+async function fetchLeaderboard(isRealtimeUpdate = false) {
+    const list = $('#leaderboard-list');
+    if (!isRealtimeUpdate) list.innerHTML = '<li style="text-align:center; opacity:0.5;">Cargando...</li>';
+
+    try {
+        const { data: sessions, error } = await supabaseClient
+            .from('game_sessions')
+            .select(`
+                rebel_points,
+                profiles (
+                    agent_name,
+                    country
+                )
+            `)
+            .order('rebel_points', { ascending: false })
+            .limit(10);
+
+        if (error) throw error;
+
+        list.innerHTML = '';
+        sessions.forEach((s, index) => {
+            let rankName = "Agente";
+            if (s.rebel_points > 60) rankName = "Élite";
+            else if (s.rebel_points > 30) rankName = "Táctico";
+            else rankName = "Campo";
+
+            const li = document.createElement('li');
+            li.innerHTML = `<span>${index + 1}. ${s.profiles.agent_name} (${s.profiles.country})</span> <span><strong class="rank-badge">${rankName}</strong> ${s.rebel_points} pts</span>`;
+            
+            if (isRealtimeUpdate) li.classList.add('new-entry');
+            list.appendChild(li);
+        });
+        
+        if (!isRealtimeUpdate) createSparkles();
+
+    } catch (error) {
+        console.error("Error cargando leaderboard:", error);
+        list.innerHTML = '<li style="color:red; text-align:center;">No se pudo cargar el ranking.</li>';
+    }
+}
+
+function createSparkles() {
+    const container = document.querySelector('.leaderboard-container');
+    for (let i = 0; i < 5; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+        sparkle.textContent = '✨';
+        sparkle.style.left = `${Math.random() * 80 + 10}%`;
+        sparkle.style.bottom = `10px`;
+        sparkle.style.animationDelay = `${Math.random() * 1}s`;
+        container.appendChild(sparkle);
+        setTimeout(() => { sparkle.remove(); }, 2500);
+    }
+}
+
+$('#btn-share').addEventListener('click', () => {
+    const text = `🕵️‍♂️ El sistema me asignó el nombre clave: ${state.agentName}. Obtuve la misión: "${$('#mission-title').textContent}". ¿Te atreves a descubrir la tuya? ${window.location.href}`;
+    if (navigator.share) navigator.share({ title: 'Misión Secreta ONU', text });
+    else navigator.clipboard.writeText(text).then(() => alert("Dossier copiado. ¡Pégalo en tus historias!"));
+});
+
+$('#btn-restart').addEventListener('click', () => {
+    searchInput.value = ''; agentInput.value = ''; state.country = null;
+    btnStart.disabled = true; btnStart.classList.add('disabled');
+    show('#screen-start');
+});
