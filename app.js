@@ -1,4 +1,35 @@
-// DATOS VERIFICADOS
+// ==========================================================================
+// 1. DATOS DE LA SIMULACIÓN
+// ==========================================================================
+
+// Lista de los 193 Estados Miembros de la ONU (orden alfabético).
+const COUNTRIES = [
+    "Afganistán", "Albania", "Alemania", "Andorra", "Angola", "Antigua y Barbuda", "Arabia Saudita", "Argelia", "Argentina", "Armenia", "Australia", "Austria", "Azerbaiyán",
+    "Bahamas", "Bangladés", "Barbados", "Baréin", "Bélgica", "Belice", "Benín", "Bielorrusia", "Bolivia", "Bosnia y Herzegovina", "Botsuana", "Brasil", "Brunéi", "Bulgaria", "Burkina Faso", "Burundi", "Bután",
+    "Cabo Verde", "Camboya", "Camerún", "Canadá", "Catar", "Chad", "Chile", "China", "Chipre", "Colombia", "Comoras", "Corea del Norte", "Corea del Sur", "Costa de Marfil", "Costa Rica", "Croacia", "Cuba",
+    "Dinamarca", "Dominica",
+    "Ecuador", "Egipto", "El Salvador", "Emiratos Árabes Unidos", "Eritrea", "Eslovaquia", "Eslovenia", "España", "Estados Unidos", "Estonia", "Etiopía",
+    "Filipinas", "Finlandia", "Fiyi", "Francia",
+    "Gabón", "Gambia", "Georgia", "Ghana", "Granada", "Grecia", "Guatemala", "Guinea", "Guinea-Bisáu", "Guinea Ecuatorial", "Guyana",
+    "Haití", "Honduras", "Hungría",
+    "India", "Indonesia", "Irak", "Irán", "Irlanda", "Islandia", "Islas Marshall", "Islas Salomón", "Israel", "Italia",
+    "Jamaica", "Japón", "Jordania",
+    "Kazajistán", "Kenia", "Kirguistán", "Kiribati", "Kuwait",
+    "Laos", "Lesoto", "Letonia", "Líbano", "Liberia", "Libia", "Liechtenstein", "Lituania", "Luxemburgo",
+    "Macedonia del Norte", "Madagascar", "Malasia", "Malaui", "Maldivas", "Malí", "Malta", "Marruecos", "Mauricio", "Mauritania", "México", "Micronesia", "Moldavia", "Mónaco", "Mongolia", "Montenegro", "Mozambique", "Myanmar",
+    "Namibia", "Nauru", "Nepal", "Nicaragua", "Níger", "Nigeria", "Noruega", "Nueva Zelanda",
+    "Omán",
+    "Países Bajos", "Pakistán", "Palaos", "Panamá", "Papúa Nueva Guinea", "Paraguay", "Perú", "Polonia", "Portugal",
+    "Reino Unido", "República Centroafricana", "República Checa", "República del Congo", "República Democrática del Congo", "República Dominicana", "Ruanda", "Rumania", "Rusia",
+    "Samoa", "San Cristóbal y Nieves", "San Marino", "San Vicente y las Granadinas", "Santa Lucía", "Santo Tomé y Príncipe", "Senegal", "Serbia", "Seychelles", "Sierra Leona", "Singapur", "Siria", "Somalia", "Sri Lanka", "Suazilandia", "Sudáfrica", "Sudán", "Sudán del Sur", "Suecia", "Suiza", "Surinam",
+    "Tailandia", "Tanzania", "Tayikistán", "Timor Oriental", "Togo", "Tonga", "Trinidad y Tobago", "Túnez", "Turkmenistán", "Turquía", "Tuvalu",
+    "Ucrania", "Uganda", "Uruguay", "Uzbekistán",
+    "Vanuatu", "Venezuela", "Vietnam",
+    "Yemen", "Yibuti",
+    "Zambia", "Zimbabue"
+];
+
+// Resoluciones del Consejo de Seguridad con datos verificados.
 const RESOLUTIONS = [
     {
         id: "R2334", titulo: "Asentamientos en Palestina",
@@ -72,7 +103,14 @@ const RESOLUTIONS = [
     }
 ];
 
+// ==========================================================================
+// 2. ESTADO Y UTILIDADES
+// ==========================================================================
+
+const P5 = ["Estados Unidos", "Rusia", "China", "Francia", "Reino Unido"];
+
 let state = { country: null, index: 0, matchesCountry: 0, matchesMajority: 0 };
+let myChart = null;
 
 const $ = (sel) => document.querySelector(sel);
 const show = (id) => {
@@ -80,8 +118,53 @@ const show = (id) => {
     $(id).classList.add('active');
 };
 
-$('#btn-start').addEventListener('click', () => {
-    state.country = $('#country-select').value;
+// ==========================================================================
+// 3. LÓGICA DEL BUSCADOR DE PAÍSES
+// ==========================================================================
+
+const searchInput = $('#country-search');
+const countryList = $('#country-list');
+const btnStart = $('#btn-start');
+
+searchInput.addEventListener('input', (e) => {
+    const val = e.target.value.toLowerCase();
+    countryList.innerHTML = '';
+    
+    if (val.length === 0) {
+        countryList.classList.add('hidden');
+        return;
+    }
+
+    const filtered = COUNTRIES.filter(c => c.toLowerCase().includes(val));
+    
+    if (filtered.length > 0) {
+        countryList.classList.remove('hidden');
+        filtered.forEach(c => {
+            const li = document.createElement('li');
+            li.textContent = c;
+            li.setAttribute('role', 'option');
+            li.addEventListener('click', () => {
+                searchInput.value = c;
+                state.country = c;
+                countryList.classList.add('hidden');
+                btnStart.disabled = false;
+                btnStart.classList.remove('disabled');
+                btnStart.focus();
+            });
+            countryList.appendChild(li);
+        });
+    } else {
+        countryList.classList.add('hidden');
+    }
+});
+
+// ==========================================================================
+// 4. LÓGICA DEL JUEGO
+// ==========================================================================
+
+// Iniciar juego
+btnStart.addEventListener('click', () => {
+    if(!state.country) return;
     state.index = 0;
     state.matchesCountry = 0;
     state.matchesMajority = 0;
@@ -89,12 +172,15 @@ $('#btn-start').addEventListener('click', () => {
     renderRound();
 });
 
+// Renderizar la ronda actual
 function renderRound() {
     const r = RESOLUTIONS[state.index];
     
-    // Barra de progreso
-    $('#progress-bar').style.width = `${((state.index) / RESOLUTIONS.length) * 100}%`;
-    $('#round-counter').textContent = `Ronda ${state.index + 1} de ${RESOLUTIONS.length}`;
+    $('#country-badge').textContent = `Delegado de ${state.country}`;
+    const progress = ((state.index) / RESOLUTIONS.length) * 100;
+    $('#progress-bar').style.width = `${progress}%`;
+    $('#progress-bar').setAttribute('aria-valuenow', progress);
+    $('#round-counter').textContent = `Ronda ${state.index + 1}/${RESOLUTIONS.length}`;
     
     $('#res-title').textContent = r.titulo;
     $('#res-context').textContent = r.contexto;
@@ -105,30 +191,43 @@ function renderRound() {
     document.querySelectorAll('.btn-vote').forEach(b => b.disabled = false);
 }
 
+// Lógica de votación
 document.querySelectorAll('.btn-vote').forEach(btn => {
     btn.addEventListener('click', () => {
         const choice = btn.dataset.vote;
         const r = RESOLUTIONS[state.index];
-        const realCountry = r.voto_real[state.country];
+        const isP5 = P5.includes(state.country);
+        
+        // Determinar el voto "real" del país seleccionado.
+        // Si es un miembro permanente (P5), se usa su voto registrado.
+        // Si es un miembro no permanente, se asume que votó con la mayoría (simplificación para el simulador).
+        const realCountryVote = isP5 ? r.voto_real[state.country] : r.mayoria;
 
-        if (realCountry === choice) state.matchesCountry++;
+        // Actualizar contadores
+        if (realCountryVote === choice) state.matchesCountry++;
         if (r.mayoria === choice) state.matchesMajority++;
 
-        // Mostrar revelación
+        // Mostrar panel de revelación
         $('#reveal').classList.remove('hidden');
         
         let resultText = `Tú votaste <strong>${choice.toUpperCase()}</strong>.<br>`;
-        resultText += `Tu país (${state.country}) votó <strong>${realCountry.toUpperCase()}</strong>.<br>`;
+        if (isP5) {
+            resultText += `Tu país (${state.country}) votó <strong>${realCountryVote.toUpperCase()}</strong>.<br>`;
+        } else {
+            resultText += `Como ${state.country} no es miembro permanente del Consejo, tu voto se alineó con la mayoría global.<br>`;
+        }
         resultText += `La mayoría votó <strong>${r.mayoria.toUpperCase()}</strong>. (${r.resultado})`;
         
         $('#reveal-text').innerHTML = resultText;
-        $('#reveal-consequence').textContent = `💡 ${r.consecuencia}`;
+        $('#reveal-consequence').textContent = `💡 Contexto: ${r.consecuencia}`;
         $('#reveal-source').href = r.fuente;
         
+        // Deshabilitar botones de voto
         document.querySelectorAll('.btn-vote').forEach(b => b.disabled = true);
     });
 });
 
+// Pasar a la siguiente ronda o finalizar
 $('#btn-next').addEventListener('click', () => {
     state.index++;
     if (state.index >= RESOLUTIONS.length) {
@@ -138,31 +237,72 @@ $('#btn-next').addEventListener('click', () => {
     }
 });
 
+// Finalizar el juego y mostrar resultados
 function finishGame() {
     $('#progress-bar').style.width = '100%';
+    $('#progress-bar').setAttribute('aria-valuenow', 100);
     const total = RESOLUTIONS.length;
     const pctCountry = Math.round((state.matchesCountry / total) * 100);
     const pctMajority = Math.round((state.matchesMajority / total) * 100);
     
-    let finalText = `Coincidiste con <strong>${state.country}</strong> en <strong>${state.matchesCountry}/${total}</strong> votos (${pctCountry}%).<br><br>`;
-    finalText += `Coincidiste con la <strong>mayoría global</strong> en <strong>${state.matchesMajority}/${total}</strong> votos (${pctMajority}%).`;
+    $('#result-subtitle').textContent = `Perfil de ${state.country} en el Consejo`;
     
+    let finalText = `Coincidiste con la <strong>mayoría global</strong> en el <strong>${pctMajority}%</strong> de los votos.`;
+    if (pctCountry > 0) {
+        finalText += `<br>Coincidiste con las decisiones de tu gobierno en el <strong>${pctCountry}%</strong>.`;
+    }
     $('#result-text').innerHTML = finalText;
+
+    // Renderizar gráfico de dona (con manejo de errores si Chart.js no cargó)
+    try {
+        const ctx = $('#resultChart').getContext('2d');
+        if (myChart) myChart.destroy(); // Destruir gráfico anterior
+        
+        myChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Coincidencia Global', 'Diferencia'],
+                datasets: [{
+                    data: [pctMajority, 100 - pctMajority],
+                    backgroundColor: ['#00b4d8', '#1e293b'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                cutout: '75%',
+                plugins: { legend: { display: false } }
+            }
+        });
+    } catch (error) {
+        console.warn('No se pudo renderizar el gráfico:', error);
+    }
+
     show('#screen-result');
 }
 
+// Compartir resultado
 $('#btn-share').addEventListener('click', () => {
-    const text = `He jugado "El Asiento Vacío". Como ${state.country}, coincidí con mi gobierno en el ${Math.round((state.matchesCountry / RESOLUTIONS.length) * 100)}% de los votos de la ONU. ¿Tú qué habrías votado?`;
+    const text = `He jugado "El Asiento Vacío". Como delegado de ${state.country}, coincidí con la mayoría global de la ONU en el ${Math.round((state.matchesMajority / RESOLUTIONS.length) * 100)}% de los votos. ¿Tú qué habrías votado?`;
     
     if (navigator.share) {
         navigator.share({ title: 'El Asiento Vacío', text: text, url: window.location.href });
     } else {
-        navigator.clipboard.writeText(text + ' ' + window.location.href);
-        $('#btn-share').textContent = '¡Copiado!';
-        setTimeout(() => { $('#btn-share').textContent = '📋 Copiar para compartir'; }, 2000);
+        navigator.clipboard.writeText(text + ' ' + window.location.href).then(() => {
+            $('#btn-share').textContent = '¡Copiado al portapapeles!';
+            setTimeout(() => { $('#btn-share').textContent = '📋 Copiar para compartir'; }, 2000);
+        }).catch(err => {
+            console.error('Error al copiar el texto: ', err);
+            $('#btn-share').textContent = 'No se pudo copiar';
+        });
     }
 });
 
+// Reiniciar juego
 $('#btn-restart').addEventListener('click', () => {
+    searchInput.value = '';
+    state.country = null;
+    btnStart.disabled = true;
+    btnStart.classList.add('disabled');
     show('#screen-start');
 });
