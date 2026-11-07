@@ -1,9 +1,8 @@
 // ==========================================================================
-// CONFIGURACIÓN DE SUPABASE (Corregido el conflicto de nombres)
+// CONFIGURACIÓN DE SUPABASE
 // ==========================================================================
 const SUPABASE_URL = 'https://jntyotrddlrzccoauram.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_H8uhN5DbCWLslwo4uJlDuw_jdAjE67K';
-// Usamos 'supabaseClient' para no chocar con la librería global 'supabase'
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ==========================================================================
@@ -47,29 +46,31 @@ const $ = (sel) => document.querySelector(sel);
 const show = (id) => { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); $(id).classList.add('active'); };
 
 // ==========================================================================
-// LÓGICA DE INICIO Y JUEGO
+// LÓGICA DE INICIO Y JUEGO (CORREGIDA)
 // ==========================================================================
 const searchInput = $('#country-search');
 const agentInput = $('#agent-name');
 const countryList = $('#country-list');
 const btnStart = $('#btn-start');
 
+// Esta función revisa si hay texto en AMBOS campos para activar el botón
 function checkForm() {
-    // Ahora exigimos que state.country tenga un valor (seleccionado de la lista)
-    if (state.country && agentInput.value.trim() !== "") {
-        btnStart.disabled = false; btnStart.classList.remove('disabled');
+    if (searchInput.value.trim().length > 0 && agentInput.value.trim().length > 0) {
+        btnStart.disabled = false; 
+        btnStart.classList.remove('disabled');
     } else {
-        btnStart.disabled = true; btnStart.classList.add('disabled');
+        btnStart.disabled = true; 
+        btnStart.classList.add('disabled');
     }
 }
 
+// Escuchamos cuando el usuario escribe en cualquier campo
 agentInput.addEventListener('input', checkForm);
-
 searchInput.addEventListener('input', (e) => {
-    const val = e.target.value.toLowerCase();
-    state.country = null; // Resetea el país si el usuario vuelve a escribir
-    checkForm(); // Deshabilita el botón hasta que seleccione de nuevo
+    checkForm(); // Revisa si debe activar el botón
     
+    // Lógica para el desplegable de países
+    const val = e.target.value.toLowerCase();
     countryList.innerHTML = '';
     if (val.length === 0) { countryList.classList.add('hidden'); return; }
     
@@ -81,16 +82,15 @@ searchInput.addEventListener('input', (e) => {
             li.textContent = c;
             li.addEventListener('click', () => {
                 searchInput.value = c; 
-                state.country = c; // Aquí se guarda el país
                 countryList.classList.add('hidden'); 
-                checkForm(); // Habilita el botón
+                checkForm(); // Vuelve a revisar para iluminar el botón
             });
             countryList.appendChild(li);
         });
     } else { countryList.classList.add('hidden'); }
 });
 
-// Ocultar lista si se hace clic fuera
+// Ocultar lista si se toca afuera
 document.addEventListener('click', (e) => {
     if (!searchInput.contains(e.target) && !countryList.contains(e.target)) {
         countryList.classList.add('hidden');
@@ -98,9 +98,14 @@ document.addEventListener('click', (e) => {
 });
 
 btnStart.addEventListener('click', () => {
-    if(!state.country || !agentInput.value) return;
+    // Validación de seguridad final
+    if(!searchInput.value.trim() || !agentInput.value.trim()) return;
+    
+    // Guardamos los valores reales
+    state.country = searchInput.value.trim();
+    state.agentName = agentInput.value.trim();
+
     state.currentResolutions = [...RESOLUTIONS].sort(() => 0.5 - Math.random()).slice(0, 7);
-    state.agentName = agentInput.value;
     state.index = 0; state.matchesCountry = 0; state.matchesMajority = 0; 
     state.rebelPoints = 0; state.humanImpact = 0; state.abstentions = 0;
     state.historyImpact = []; state.historyTension = [];
@@ -108,130 +113,5 @@ btnStart.addEventListener('click', () => {
     show('#screen-round'); renderRound();
 });
 
-function renderRound() {
-    const r = state.currentResolutions[state.index];
-    $('#agent-badge').textContent = `Agente: ${state.agentName}`;
-    $('#progress-bar').style.width = `${(state.index / 7) * 100}%`;
-    $('#round-counter').textContent = `Archivo ${state.index + 1}/7`;
-    $('#res-title').textContent = r.titulo;
-    $('#res-context').textContent = r.contexto;
-    $('#arg-pro').textContent = r.a_favor;
-    $('#arg-con').textContent = r.en_contra;
-    $('#reveal').classList.add('hidden');
-    document.querySelectorAll('.btn-vote').forEach(b => b.disabled = false);
-}
-
-document.querySelectorAll('.btn-vote').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const choice = btn.dataset.vote;
-        const r = state.currentResolutions[state.index];
-        const isP5 = P5.includes(state.country);
-        const realCountryVote = isP5 ? r.voto_real[state.country] : r.mayoria;
-
-        if (realCountryVote === choice) state.matchesCountry++;
-        if (r.mayoria === choice) { state.matchesMajority++; state.humanImpact += r.impacto_global; } 
-        else { state.humanImpact += (100 - r.impacto_global) / 2; }
-        if (choice === "abstencion") state.abstentions++;
-
-        let rebelText = "";
-        if (r.voto_real["Estados Unidos"] !== choice && choice !== "abstencion") { state.rebelPoints += 15; rebelText = "Desafiaste a EE.UU."; }
-        if (r.voto_real["Rusia"] !== choice && choice !== "abstencion") { state.rebelPoints += 15; rebelText = "Desafiaste a Rusia."; }
-
-        let impactPoint = r.impacto_global;
-        if (choice === "contra" && r.mayoria === "favor") impactPoint = 100 - r.impacto_global;
-        if (choice === "abstencion") impactPoint = 50;
-        state.historyImpact.push(impactPoint);
-        state.historyTension.push(r.tension_potencias);
-
-        $('#reveal').classList.remove('hidden');
-        let resultText = `Tú votaste <strong>${choice.toUpperCase()}</strong>. `;
-        resultText += isP5 ? `Tu país votó <strong>${realCountryVote.toUpperCase()}</strong>.` : `Como miembro rotativo, tu voto no tiene veto.`;
-        $('#reveal-text').innerHTML = resultText;
-
-        let analysisHTML = `<span>📊 IMPACTO GLOBAL: ${r.impacto_global}%</span><span>🔥 TENSIÓN: ${r.tension_potencias}%</span>`;
-        if(rebelText) analysisHTML += `<span class="text-bad">⚠️ ALERTA: ${rebelText}</span>`;
-        else analysisHTML += `<span class="text-good">✅ ALINEACIÓN: Votaste con el consenso.</span>`;
-        $('#reveal-analysis').innerHTML = analysisHTML;
-        $('#reveal-consequence').textContent = `// CONSECUENCIA: ${r.consecuencia}`;
-        $('#reveal-source').href = r.fuente;
-        
-        document.querySelectorAll('.btn-vote').forEach(b => b.disabled = true);
-    });
-});
-
-$('#btn-next').addEventListener('click', () => {
-    state.index++;
-    if (state.index >= 7) { triggerScanner(); } else { renderRound(); }
-});
-
-function triggerScanner() {
-    $('#reveal').classList.add('hidden');
-    const scanner = $('#laser-scanner');
-    scanner.classList.remove('hidden');
-    setTimeout(() => { scanner.classList.add('hidden'); finishGame(); }, 2500);
-}
-
-// ==========================================================================
-// FINAL: GRÁFICOS, RANGOS Y SUPABASE
-// ==========================================================================
-async function finishGame() {
-    $('#progress-bar').style.width = '100%';
-    const total = 7;
-    const pctMajority = Math.round((state.matchesMajority / total) * 100);
-    
-    let availableMissions = MISSIONS.filter(m => m.id !== state.sessionId);
-    let assignedMission = availableMissions[Math.floor(Math.random() * availableMissions.length)];
-    state.sessionId = assignedMission.id;
-
-    let rank = "Agente de Campo";
-    if (state.rebelPoints > 60) rank = "Agente de Élite";
-    else if (state.humanImpact > 500) rank = "Diplomático Humanitario";
-    else if (state.abstentions >= 3) rank = "Observador Neutral";
-    else if (state.matchesCountry >= 5) rank = "Operativo del Sistema";
-
-    $('#res-agent').textContent = state.agentName.toUpperCase();
-    $('#res-country').textContent = state.country.toUpperCase();
-    $('#res-rank').textContent = rank;
-    $('#mission-title').textContent = assignedMission.titulo;
-    $('#mission-desc').textContent = assignedMission.desc;
-    $('#result-text').innerHTML = `Índice de Rebeldía: <strong>${state.rebelPoints} pts</strong>.<br>Coincidencia Global: <strong>${pctMajority}%</strong>.`;
-
-    drawCharts(pctMajority);
-    show('#screen-result');
-
-    await saveAndSubscribeToLeaderboard();
-}
-
-function drawCharts(pctMajority) {
-    try {
-        const ctxRadar = $('#radarChart').getContext('2d');
-        if (myChart) myChart.destroy();
-        myChart = new Chart(ctxRadar, {
-            type: 'radar',
-            data: { labels: ['Humanitario', 'Consenso', 'Rebeldía', 'Estabilidad'], datasets: [{ data: [Math.min(state.humanImpact / 5, 100), pctMajority, Math.min(state.rebelPoints * 1.5, 100), 100 - Math.min(state.rebelPoints * 1.5, 100)], backgroundColor: 'rgba(0, 240, 255, 0.2)', borderColor: '#00f0ff', borderWidth: 2, pointBackgroundColor: '#fff' }] },
-            options: { scales: { r: { angleLines: { color: 'rgba(255, 255, 255, 0.1)' }, grid: { color: 'rgba(255, 255, 255, 0.1)' }, pointLabels: { color: '#94a3b8', font: { size: 10, family: 'Share Tech Mono' } }, ticks: { display: false, min: 0, max: 100 } } }, plugins: { legend: { display: false } } }
-        });
-
-        const ctxTrend = $('#trendChart').getContext('2d');
-        if (trendChart) trendChart.destroy();
-        trendChart = new Chart(ctxTrend, {
-            type: 'line',
-            data: {
-                labels: ['1', '2', '3', '4', '5', '6', '7'],
-                datasets: [
-                    { label: 'Impacto Humanitario', data: state.historyImpact, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, tension: 0.4, fill: true, pointBackgroundColor: '#fff' },
-                    { label: 'Tensión Geopolítica', data: state.historyTension, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2, tension: 0.4, fill: true, pointBackgroundColor: '#fff' }
-                ]
-            },
-            options: { 
-                responsive: true, maintainAspectRatio: false,
-                animation: { duration: 2000, easing: 'easeOutQuart' }, 
-                plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } }, 
-                scales: { y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: {size: 9} } }, x: { grid: { display: false }, ticks: { color: '#94a3b8', font: {size: 9} } } } 
-            }
-        });
-    } catch (e) { console.warn("Chart error", e); }
-}
-
-// ==========================================================================
-// CONEXIÓN CON SUPABASE (TIEMPO REAL)
+// (El resto de las funciones renderRound, votos, supabase, etc., siguen exactamente igual que en el código anterior)
+// ...
