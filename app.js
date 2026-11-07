@@ -1,9 +1,10 @@
 // ==========================================================================
-// CONFIGURACIÓN DE SUPABASE
+// CONFIGURACIÓN DE SUPABASE (Corregido el conflicto de nombres)
 // ==========================================================================
 const SUPABASE_URL = 'https://jntyotrddlrzccoauram.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_H8uhN5DbCWLslwo4uJlDuw_jdAjE67K';
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Usamos 'supabaseClient' para no chocar con la librería global 'supabase'
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ==========================================================================
 // DATOS Y RESOLUCIONES
@@ -54,18 +55,24 @@ const countryList = $('#country-list');
 const btnStart = $('#btn-start');
 
 function checkForm() {
-    if (searchInput.value && agentInput.value.trim() !== "") {
+    // Ahora exigimos que state.country tenga un valor (seleccionado de la lista)
+    if (state.country && agentInput.value.trim() !== "") {
         btnStart.disabled = false; btnStart.classList.remove('disabled');
     } else {
         btnStart.disabled = true; btnStart.classList.add('disabled');
     }
 }
+
 agentInput.addEventListener('input', checkForm);
 
 searchInput.addEventListener('input', (e) => {
     const val = e.target.value.toLowerCase();
+    state.country = null; // Resetea el país si el usuario vuelve a escribir
+    checkForm(); // Deshabilita el botón hasta que seleccione de nuevo
+    
     countryList.innerHTML = '';
-    if (val.length === 0) { countryList.classList.add('hidden'); checkForm(); return; }
+    if (val.length === 0) { countryList.classList.add('hidden'); return; }
+    
     const filtered = COUNTRIES.filter(c => c.toLowerCase().includes(val));
     if (filtered.length > 0) {
         countryList.classList.remove('hidden');
@@ -73,12 +80,21 @@ searchInput.addEventListener('input', (e) => {
             const li = document.createElement('li');
             li.textContent = c;
             li.addEventListener('click', () => {
-                searchInput.value = c; state.country = c;
-                countryList.classList.add('hidden'); checkForm();
+                searchInput.value = c; 
+                state.country = c; // Aquí se guarda el país
+                countryList.classList.add('hidden'); 
+                checkForm(); // Habilita el botón
             });
             countryList.appendChild(li);
         });
     } else { countryList.classList.add('hidden'); }
+});
+
+// Ocultar lista si se hace clic fuera
+document.addEventListener('click', (e) => {
+    if (!searchInput.contains(e.target) && !countryList.contains(e.target)) {
+        countryList.classList.add('hidden');
+    }
 });
 
 btnStart.addEventListener('click', () => {
@@ -163,12 +179,10 @@ async function finishGame() {
     const total = 7;
     const pctMajority = Math.round((state.matchesMajority / total) * 100);
     
-    // Asignar Misión (sin repetir en la misma sesión)
     let availableMissions = MISSIONS.filter(m => m.id !== state.sessionId);
     let assignedMission = availableMissions[Math.floor(Math.random() * availableMissions.length)];
     state.sessionId = assignedMission.id;
 
-    // Calcular Rango
     let rank = "Agente de Campo";
     if (state.rebelPoints > 60) rank = "Agente de Élite";
     else if (state.humanImpact > 500) rank = "Diplomático Humanitario";
@@ -211,7 +225,7 @@ function drawCharts(pctMajority) {
             },
             options: { 
                 responsive: true, maintainAspectRatio: false,
-                animation: { duration: 2000, easing: 'easeOutQuart' }, // Animación aquí
+                animation: { duration: 2000, easing: 'easeOutQuart' }, 
                 plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } }, 
                 scales: { y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: {size: 9} } }, x: { grid: { display: false }, ticks: { color: '#94a3b8', font: {size: 9} } } } 
             }
@@ -221,16 +235,3 @@ function drawCharts(pctMajority) {
 
 // ==========================================================================
 // CONEXIÓN CON SUPABASE (TIEMPO REAL)
-// ==========================================================================
-async function saveAndSubscribeToLeaderboard() {
-    const list = $('#leaderboard-list');
-    list.innerHTML = '<li style="text-align:center; opacity:0.5;">Sincronizando con el satélite...</li>';
-
-    try {
-        // 1. Guardar el perfil
-        const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .insert([{ agent_name: state.agentName, country: state.country }])
-            .select().single();
-
-        if (
