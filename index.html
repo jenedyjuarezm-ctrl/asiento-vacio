@@ -6,77 +6,86 @@
     <title>El Asiento Vacío | Simulador ONU</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;800&display=swap" rel="stylesheet">
+    <!-- Carga de Chart.js con manejo de errores -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" onerror="console.error('Error al cargar Chart.js. Los gráficos no estarán disponibles.')"></script>
 </head>
 <body>
     <div id="app">
         <!-- Pantalla de Inicio -->
-        <section id="screen-start" class="screen active">
-            <div class="logo">🇺🇳</div>
-            <h1>El Asiento Vacío</h1>
-            <p class="subtitle">Tienes el poder del veto. Úsalo. Luego mira qué habría pasado.</p>
-            <div class="card">
-                <label for="country-select">Elige tu país para ocupar el asiento:</label>
-                <select id="country-select">
-                    <option value="Estados Unidos">Estados Unidos</option>
-                    <option value="Rusia">Rusia</option>
-                    <option value="China">China</option>
-                    <option value="Francia">Francia</option>
-                    <option value="Reino Unido">Reino Unido</option>
-                </select>
-                <button id="btn-start" class="btn-primary">Comenzar Sesión</button>
+        <section id="screen-start" class="screen active" aria-labelledby="start-title">
+            <div class="glass-panel">
+                <div class="logo" aria-hidden="true">🇺🇳</div>
+                <h1 id="start-title">El Asiento Vacío</h1>
+                <p class="subtitle">Simulador Geopolítico. Toma el poder del veto.</p>
+                
+                <div class="input-group">
+                    <label for="country-search">Busca tu país para ocupar el asiento:</label>
+                    <input type="text" id="country-search" placeholder="Ej. Cuba, México, España..." autocomplete="off" aria-autocomplete="list" aria-controls="country-list">
+                    <ul id="country-list" class="dropdown-list hidden" role="listbox" aria-label="Lista de países"></ul>
+                </div>
+
+                <button id="btn-start" class="btn-primary disabled" disabled aria-label="Comenzar la simulación">Comenzar Sesión</button>
             </div>
         </section>
 
         <!-- Pantalla de Juego -->
-        <section id="screen-round" class="screen">
-            <div class="progress-container">
+        <section id="screen-round" class="screen" aria-labelledby="round-title">
+            <div class="header-game">
+                <span id="country-badge" class="badge">Delegado de...</span>
+                <span id="round-counter" class="badge alt">Ronda 1/7</span>
+            </div>
+            
+            <div class="progress-container" role="progressbar" aria-valuemin="0" aria-valuemax="100">
                 <div id="progress-bar"></div>
             </div>
-            <div class="header-round">
-                <span id="round-counter" class="badge">Ronda 1/7</span>
-            </div>
-            <div class="card">
+
+            <div class="glass-panel">
                 <h2 id="res-title"></h2>
                 <p id="res-context" class="context-text"></p>
                 
                 <div class="arguments">
                     <div class="arg-box pro">
-                        <strong>A favor:</strong> <span id="arg-pro"></span>
+                        <div class="icon" aria-hidden="true">✅</div>
+                        <div><strong>A favor:</strong> <span id="arg-pro"></span></div>
                     </div>
                     <div class="arg-box con">
-                        <strong>En contra:</strong> <span id="arg-con"></span>
+                        <div class="icon" aria-hidden="true">❌</div>
+                        <div><strong>En contra:</strong> <span id="arg-con"></span></div>
                     </div>
                 </div>
 
                 <div class="vote-buttons">
-                    <button data-vote="favor" class="btn-vote favor">A favor</button>
-                    <button data-vote="contra" class="btn-vote contra">Veto / Contra</button>
-                    <button data-vote="abstencion" class="btn-vote abstencion">Abstención</button>
+                    <button data-vote="favor" class="btn-vote favor" aria-label="Votar a favor">A favor</button>
+                    <button data-vote="contra" class="btn-vote contra" aria-label="Votar en contra o usar el veto">Veto / Contra</button>
+                    <button data-vote="abstencion" class="btn-vote abstencion" aria-label="Abstenerse en la votación">Abstención</button>
                 </div>
             </div>
 
             <!-- Panel de Revelación -->
-            <div id="reveal" class="reveal-panel hidden">
-                <h3 id="reveal-title"></h3>
+            <div id="reveal" class="glass-panel reveal-panel hidden" aria-live="polite">
+                <h3 id="reveal-title">Resultado de la votación</h3>
                 <p id="reveal-text"></p>
                 <p class="consequence" id="reveal-consequence"></p>
-                <a id="reveal-source" href="#" target="_blank" class="source-link">Verificar en fuente oficial ↗</a>
-                <button id="btn-next" class="btn-primary">Siguiente Resolución →</button>
+                <a id="reveal-source" href="#" target="_blank" rel="noopener" class="source-link">Verificar en fuente oficial ↗</a>
+                <button id="btn-next" class="btn-primary" aria-label="Ir a la siguiente resolución">Siguiente Resolución →</button>
             </div>
         </section>
 
         <!-- Pantalla de Resultados -->
-        <section id="screen-result" class="screen">
-            <div class="logo">📊</div>
-            <h2>Resultado de tu Gestión</h2>
-            <div class="card result-card">
+        <section id="screen-result" class="screen" aria-labelledby="result-title">
+            <div class="glass-panel result-panel">
+                <h2 id="result-title">Resultado de tu Gestión</h2>
+                <p id="result-subtitle"></p>
+                
+                <div class="chart-container" aria-hidden="true">
+                    <canvas id="resultChart"></canvas>
+                </div>
+
                 <p id="result-text" class="result-text"></p>
+                
+                <button id="btn-share" class="btn-secondary" aria-label="Copiar el resultado para compartir">📋 Copiar para compartir</button>
+                <button id="btn-restart" class="btn-primary mt-20" aria-label="Volver a jugar desde el inicio">Jugar de nuevo</button>
             </div>
-            <div class="share-box">
-                <p>Comparte tu resultado:</p>
-                <button id="btn-share" class="btn-secondary">📋 Copiar para compartir</button>
-            </div>
-            <button id="btn-restart" class="btn-primary mt-20">Jugar de nuevo</button>
         </section>
     </div>
     <script src="app.js"></script>
