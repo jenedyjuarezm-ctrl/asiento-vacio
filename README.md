@@ -6,7 +6,6 @@
 **El Asiento Vacío** es un simulador geopolítico interactivo de alto nivel. Te permite ocupar un asiento en el Consejo de Seguridad de las Naciones Unidas, tomar decisiones sobre resoluciones históricas reales y descubrir si tus decisiones te convierten en un aliado del sistema o en un agente rebelde.
 
 🔗 **[JUGAR AHORA EN VIVO AQUÍ](https://jenedyjuarezm-ctrl.github.io/asiento-vacio/)**
-*(Reemplaza este enlace con tu URL de GitHub Pages si el nombre de tu repositorio es distinto).*
 
 ---
 
