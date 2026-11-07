@@ -6,7 +6,7 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-body { background-color: var(--bg-base); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; overflow: hidden; }
+body { background-color: var(--bg-base); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; overflow-x: hidden; }
 
 /* FONDO CIRCUITOS */
 .circuit-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background-color: #050a15; }
@@ -17,16 +17,12 @@ body { background-color: var(--bg-base); color: var(--text-main); display: flex;
 .orb-2 { width: 400px; height: 400px; background: #00f0ff; bottom: -150px; right: -150px; animation-delay: 2s; }
 @keyframes pulse { 0% { transform: scale(1); opacity: 0.3; } 100% { transform: scale(1.2); opacity: 0.6; } }
 
-/* LÁSER SCANNER (Animación Final) */
-#laser-scanner {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 5px;
-    background: #00f0ff; box-shadow: 0 0 20px 5px #00f0ff, 0 0 50px 10px rgba(0,240,255,0.5);
-    z-index: 999; animation: scan 2s linear forwards; pointer-events: none;
-}
+/* LÁSER SCANNER */
+#laser-scanner { position: fixed; top: 0; left: 0; width: 100vw; height: 5px; background: #00f0ff; box-shadow: 0 0 20px 5px #00f0ff, 0 0 50px 10px rgba(0,240,255,0.5); z-index: 999; animation: scan 2s linear forwards; pointer-events: none; }
 @keyframes scan { 0% { top: -10px; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100vh; opacity: 0; } }
 
-/* INTERFAZ GENERAL */
-#app { width: 100%; max-width: 600px; position: relative; z-index: 1; max-height: 95vh; overflow-y: auto; scrollbar-width: none; }
+/* INTERFAZ */
+#app { width: 100%; max-width: 600px; position: relative; z-index: 1; max-height: 95vh; overflow-y: auto; scrollbar-width: none; padding-bottom: 20px; }
 #app::-webkit-scrollbar { display: none; }
 .screen { display: none; animation: slideUp 0.5s ease-out; }
 .screen.active { display: block; }
@@ -43,7 +39,6 @@ h2 { font-size: 1.3rem; text-align: left; border-bottom: 1px solid rgba(0,240,25
 label { display: block; margin-bottom: 8px; font-size: 0.85rem; color: var(--un-light); font-family: 'Share Tech Mono', monospace; }
 input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; background: rgba(0,0,0,0.5); color: var(--un-light); border: 1px solid var(--glass-border); font-size: 1rem; outline: none; transition: 0.3s; font-family: 'Share Tech Mono', monospace; }
 input[type="text"]:focus { border-color: var(--un-light); box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); }
-
 .dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background: #0a101f; border: 1px solid var(--un-blue); border-radius: 8px; max-height: 150px; overflow-y: auto; z-index: 100; margin-top: 5px; list-style: none; }
 .dropdown-list li { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid rgba(0, 240, 255, 0.1); font-size: 0.9rem; }
 .dropdown-list li:hover { background: rgba(0, 119, 182, 0.4); color: white; }
@@ -59,7 +54,6 @@ input[type="text"]:focus { border-color: var(--un-light); box-shadow: 0 0 15px r
 .badge.alt { background: rgba(255,255,255,0.05); color: #fff; border-color: rgba(255,255,255,0.2); }
 .progress-container { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-bottom: 20px; overflow: hidden; }
 #progress-bar { height: 100%; background: var(--un-light); width: 0%; transition: width 0.4s ease; box-shadow: 0 0 10px var(--un-light); }
-
 .intel-box { background: rgba(0,0,0,0.4); border-left: 2px solid var(--un-light); padding: 15px; margin-bottom: 20px; border-radius: 0 8px 8px 0; }
 .intel-label { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; color: var(--un-light); display: block; margin-bottom: 5px; }
 .context-text { color: #cbd5e1; line-height: 1.5; font-size: 0.95rem; }
@@ -67,8 +61,6 @@ input[type="text"]:focus { border-color: var(--un-light); box-shadow: 0 0 15px r
 .arg-box { padding: 12px 15px; border-radius: 8px; font-size: 0.9rem; background: rgba(255,255,255,0.03); display: flex; gap: 12px; align-items: flex-start; border: 1px solid rgba(255,255,255,0.05); }
 .arg-box.pro { border-left: 3px solid var(--green); }
 .arg-box.con { border-left: 3px solid var(--red); }
-.arg-box .icon { font-size: 1rem; margin-top: 2px; }
-
 .vote-buttons { display: flex; flex-direction: column; gap: 10px; }
 .btn-vote { padding: 14px; border-radius: 8px; border: 1px solid #334155; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: 0.2s; background: rgba(0,0,0,0.4); color: var(--text-main); font-family: 'Share Tech Mono', monospace; }
 .btn-vote:hover { transform: translateX(5px); }
@@ -90,21 +82,47 @@ input[type="text"]:focus { border-color: var(--un-light); box-shadow: 0 0 15px r
 /* RESULTADOS Y DOSSIER */
 .result-panel { text-align: center; }
 .relative-container { position: relative; overflow: hidden; padding-top: 30px; }
-.stamp { 
-    position: absolute; top: 20px; right: -20px; border: 3px solid rgba(239, 68, 68, 0.7); color: rgba(239, 68, 68, 0.7); 
-    font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; font-weight: bold; padding: 5px 20px; 
-    transform: rotate(15deg); border-radius: 5px; opacity: 0.8; letter-spacing: 2px; pointer-events: none;
-}
+.stamp { position: absolute; top: 20px; right: -20px; border: 3px solid rgba(239, 68, 68, 0.7); color: rgba(239, 68, 68, 0.7); font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; font-weight: bold; padding: 5px 20px; transform: rotate(15deg); border-radius: 5px; opacity: 0.8; letter-spacing: 2px; pointer-events: none; }
 .satellite-anim { font-size: 3rem; animation: floatSat 3s ease-in-out infinite; margin-bottom: 10px; }
 @keyframes floatSat { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-15px) rotate(10deg); } }
 .dossier { background: rgba(0,0,0,0.5); border: 1px dashed rgba(0,240,255,0.4); padding: 20px; border-radius: 10px; text-align: left; margin-bottom: 20px; }
 .dossier p { font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; margin-bottom: 5px; color: #cbd5e1; }
 .dossier hr { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0; }
+.rank-badge { font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; padding: 2px 8px; border-radius: 4px; background: rgba(0, 240, 255, 0.1); border: 1px solid var(--un-light); color: var(--un-light); text-transform: uppercase; }
 .mission-title { color: var(--yellow); font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; margin-bottom: 10px; text-transform: uppercase; text-align: center; text-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
 .mission-desc { font-size: 0.95rem; line-height: 1.5; color: white; text-align: center; }
-.chart-container { width: 100%; max-width: 260px; margin: 0 auto 15px; position: relative; }
+
+/* GRÁFICOS */
+.trend-container, .chart-container { background: rgba(0,0,0,0.3); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+.section-title { font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: var(--un-light); margin-bottom: 10px; text-transform: uppercase; text-align: left; border-left: 3px solid var(--un-light); padding-left: 8px; }
+.chart-wrapper { position: relative; height: 200px; width: 100%; }
+
 .result-text { font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px; color: var(--text-muted); font-family: 'Share Tech Mono', monospace; }
 .btn-secondary { background: transparent; border: 1px solid var(--un-light); color: var(--un-light); padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; width: 100%; font-family: 'Share Tech Mono', monospace; }
 .btn-secondary:hover { background: rgba(0, 240, 255, 0.1); box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); }
 .mt-20 { margin-top: 15px; }
 .hidden { display: none !important; }
+
+/* LEADERBOARD Y ROBOT */
+.leaderboard-container { margin-top: 25px; background: rgba(10, 15, 30, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; position: relative; overflow: hidden; }
+.leaderboard-list { list-style: none; margin-top: 15px; position: relative; z-index: 2; padding-left: 0; }
+.leaderboard-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #cbd5e1; opacity: 0; transform: translateX(-20px); animation: slideIn 0.5s ease forwards; }
+.leaderboard-list li:nth-child(1) { animation-delay: 0.1s; color: #fbbf24; font-weight: bold; }
+.leaderboard-list li:nth-child(2) { animation-delay: 0.2s; color: #94a3b8; }
+.leaderboard-list li:nth-child(3) { animation-delay: 0.3s; color: #b45309; }
+.leaderboard-list li:nth-child(n+4) { animation-delay: 0.4s; }
+@keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+@keyframes highlightNew { 0% { background-color: rgba(0, 240, 255, 0.4); } 100% { background-color: transparent; } }
+.leaderboard-list li.new-entry { animation: highlightNew 2s ease-out; }
+
+.sparkle { position: absolute; pointer-events: none; animation: floatUp 1.5s forwards; font-size: 1.2rem; z-index: 1; }
+@keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-40px) scale(0.5); } }
+
+.cute-robot-wrapper { position: absolute; bottom: 10px; right: 10px; z-index: 10; }
+.cute-robot { background: var(--un-light); width: 45px; height: 45px; border-radius: 10px; display: flex; justify-content: center; align-items: center; position: relative; box-shadow: 0 0 15px rgba(0, 240, 255, 0.5); animation: robotFloat 3s ease-in-out infinite; cursor: pointer; }
+.robot-face { font-family: monospace; font-weight: bold; color: #000; font-size: 1.1rem; animation: blink 4s infinite; }
+.robot-thumb { position: absolute; top: -20px; right: -15px; font-size: 1.2rem; transform: rotate(15deg); opacity: 0; transition: 0.3s; }
+.cute-robot:hover .robot-thumb { opacity: 1; top: -30px; animation: bounceThumb 0.5s infinite alternate; }
+@keyframes robotFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes blink { 0%, 96%, 100% { opacity: 1; } 98% { opacity: 0.2; } }
+@keyframes bounceThumb { from { transform: translateY(0) rotate(15deg); } to { transform: translateY(-5px) rotate(25deg); } }
